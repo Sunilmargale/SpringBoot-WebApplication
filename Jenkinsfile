@@ -67,7 +67,7 @@ pipeline {
 
         stage('Deploy to container') {
             steps {
-                sh "docker run -dp 8082:8082 sunilmargale/webapp:latest"
+                sh "docker run -dp 8081:8081 sunilmargale/webapp:latest"
             }
         }
         
