@@ -13,7 +13,7 @@ pipeline {
     stages {
         stage('Git Checkout ') {
             steps {
-                git branch: 'main', changelog: false, poll: false, url: 'https://github.com/jaiswaladi246/SpringBoot-WebApplication.git'
+                git branch: 'main', changelog: false, poll: false, url: 'https://github.com/Sunilmargale/SpringBoot-WebApplication.git'
             }
         }
         
@@ -31,7 +31,7 @@ pipeline {
         
         stage('Sonarqube Analysis') {
             steps {
-                    withSonarQubeEnv('sonar-server') {
+                    withSonarQubeEnv('sonar-scanner') {
                         sh ''' $SCANNER_HOME/bin/sonar-scanner -Dsonar.projectName=Java-WebApp \
                         -Dsonar.java.binaries=. \
                         -Dsonar.projectKey=Java-WebApp '''
@@ -42,7 +42,7 @@ pipeline {
         
         stage('OWASP Dependency Check') {
             steps {
-                   dependencyCheck additionalArguments: '--scan ./   ', odcInstallation: 'DP'
+                   dependencyCheck additionalArguments: '--scan ./   ', odcInstallation: 'DC'
                    dependencyCheckPublisher pattern: '**/dependency-check-report.xml'
             }
         }
@@ -56,20 +56,25 @@ pipeline {
         stage('Docker Build & Push') {
             steps {
                    script {
-                       withDockerRegistry(credentialsId: 'b289dc43-2ede-4bd0-95e8-75ca26100d8d', toolName: 'docker') {
+                       withDockerRegistry(credentialsId: 'docker-cred', toolName: 'docker') {
                             sh "docker build -t webapp ."
-                            sh "docker tag webapp adijaiswal/webapp:latest"
-                            sh "docker push adijaiswal/webapp:latest "
+                            sh "docker tag webapp sunilmargale/webapp:latest"
+                            sh "docker push sunilmargale/webapp:latest "
                         }
                    } 
+            }
+        }
+
+        stage('Deploy to container') {
+            steps {
+                sh "docker run -dp 8082:8082 sunilmargale/webapp:latest"
             }
         }
         
         stage('Docker Image scan') {
             steps {
-                    sh "trivy image adijaiswal/webapp:latest "
+                    sh "trivy image sunilmargale/webapp:latest "
             }
         }
-        
     }
 }
