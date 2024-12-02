@@ -1,13 +1,13 @@
-# Multi-stage build example
+# You can change this base image to anything else
+# But make sure to use the correct version of Java
+FROM adoptopenjdk/openjdk11:alpine-jre
 
-# Stage 1: Build
-FROM maven:3.8.6-openjdk-17 as builder
-WORKDIR /app
-COPY . .
-RUN mvn clean package -DskipTests
+# Simply the artifact path
+ARG artifact=target/spring-boot-web.jar
 
-# Stage 2: Runtime
-FROM openjdk:17-jdk-slim
-WORKDIR /app
-COPY --from=builder /app/target/spring-boot-web.jar spring-boot-web.jar
-ENTRYPOINT ["java", "-jar", "spring-boot-web.jar"]
+WORKDIR /opt/app
+
+COPY ${artifact} app.jar
+
+# This should not be changed
+ENTRYPOINT ["java","-jar","app.jar"]
